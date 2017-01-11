@@ -87,14 +87,14 @@ String TelegramBOT::connectToTelegram(String command)  {
  ***************************************************************/
 void TelegramBOT::getUpdates(String offset, int limit)  {
     
-    Serial.println("GET Update Messages ");
+    //Serial.println("GET Update Messages ");
     String command="bot"+_token+"/getUpdates?offset="+offset+"&limit="+limit;
     String mess=connectToTelegram(command);       //recieve reply from telegram.org
     // parsing of reply from Telegram into separate received messages
     int i=0;                //messages received counter
     if (mess!="") {
-            Serial.print("Sent Update request messages up to : ");
-            Serial.println(offset);
+            //Serial.print("Sent Update request messages up to : ");
+            //Serial.println(offset);
             String a="";
             int ch_count=0;
             String c;
@@ -120,21 +120,21 @@ void TelegramBOT::getUpdates(String offset, int limit)  {
     }
     //check result of parsing process
     if (mess=="") {     
-        Serial.println("failed to update");
+        //Serial.println("failed to update");
         return;
     }   
     if (i==0) {
-        Serial.println("no new messages");
-        Serial.println();
+        //Serial.println("no new messages");
+        //Serial.println();
         message[0][0]="0";
     }
     else {
         message[0][0]=String(i);   //returns how many messages are in the array
 	//Serial.println();        	
 	for (int b=1; b<i+1; b++)  {
-          Serial.println(message[b][0]);
+          //Serial.println(message[b][0]);
         }
-        Serial.println();
+        //Serial.println();
         analizeMessages();
     }
 } 
@@ -195,6 +195,42 @@ void TelegramBOT::sendDocument(String chat_id, String document)  {
     if (document!="") {
       while (millis()<sttime+8000) {    // loop for a while to send the message
     String command="bot"+_token+"/sendDocument?chat_id="+chat_id+"&document="+document;
+    String mess=connectToTelegram(command);
+    //Serial.println(mess);
+    int messageLenght=mess.length();
+    for (int m=5; m<messageLenght+1; m++)  {
+        if (mess.substring(m-10,m)=="{\"ok\":true")     {  //Chek if message has been properly sent
+            sent=true;
+            break;
+        }
+    }
+    if (sent==true)   {
+    //  Serial.print("Message delivred: \"");
+    //  Serial.print(document);
+    //  Serial.println("\"");
+    //  Serial.println();
+      break;
+    }
+    delay(1000);
+  //  Serial.println("Retry");
+
+      }
+    }
+   // if (sent==false) Serial.println("Message not delivered");
+}
+
+/***********************************************************************
+ * sendLocation - function to send document to telegram                  *
+ * (Arguments to pass: chat_id, latitude, longitude) *
+ ***********************************************************************/
+void TelegramBOT::sendLocation(String chat_id, float latitude, float longitude)  {
+
+    bool sent=false;
+   // Serial.println("SEND Message ");
+    long sttime=millis();
+    if (latitude && longitude) {
+      while (millis()<sttime+8000) {    // loop for a while to send the message
+    String command="bot"+_token+"/sendLocation?chat_id="+chat_id+"&latitude="+latitude+"&longitude="+longitude;
     String mess=connectToTelegram(command);
     //Serial.println(mess);
     int messageLenght=mess.length();
